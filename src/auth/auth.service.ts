@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from '@prisma/client';
+import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +51,10 @@ export class AuthService {
     email = email.trim().toLowerCase();
 
     // Buscar usuario
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+        where: { email },
+        include: {team: true}
+    });
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas - correo');
     }
@@ -71,7 +75,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-        teamId: user.teamId
+        teamId: user.team
       },
     };
   }
@@ -102,5 +106,26 @@ export class AuthService {
         teamId: updatedUser.teamId,
       },
     };
+  }
+
+  async createTeam(createTeamDto: CreateTeamDto) {
+    const { users } = createTeamDto;
+
+    return await this.prisma.team.create({
+      data: {
+        users: {
+          connect: users.map(id => ({ id }))
+        }
+      },
+      include: {
+        users: true
+      }
+    });
+  }
+
+  async findAllUsers() {
+    return {
+      data: await this.prisma.user.findMany({})
+    }
   }
 }
