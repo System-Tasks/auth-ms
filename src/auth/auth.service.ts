@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Role } from '@prisma/client';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     // Verificar si el usuario ya existe
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new UnauthorizedException('El usuario ya está registrado');
+      throw new RpcException('El usuario ya está registrado');
     }
 
     const hashedPassword = await bcrypt.hashSync(password, 10);
@@ -56,13 +56,13 @@ export class AuthService {
         include: {team: true}
     });
     if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas - correo');
+      throw new RpcException('Credenciales inválidas - correo');
     }
 
     // Verificar contraseña
-    const isPasswordValid = await bcrypt.compareSync(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciales inválidas - clave');
+      throw new RpcException('Credenciales inválidas - clave');
     }
 
     const token = this.jwtService.sign({ id: user.id, role: user.role });
@@ -83,13 +83,13 @@ export class AuthService {
   async addUserToTeam(userId: string, teamId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
+      throw new RpcException('Usuario no encontrado');
     }
   
     // Verificar si el equipo existe
     const team = await this.prisma.team.findUnique({ where: { id: teamId } });
     if (!team) {
-      throw new UnauthorizedException('Equipo no encontrado');
+      throw new RpcException('Equipo no encontrado');
     }
   
     const updatedUser = await this.prisma.user.update({
