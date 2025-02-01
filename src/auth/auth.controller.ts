@@ -25,8 +25,8 @@ export class AuthController {
   }
 
   @MessagePattern('createTeam')
-  createTeam(@Payload() createTeamDto: CreateTeamDto) {
-    return this.authService.createTeam(createTeamDto);
+  createTeam(@Payload() { id, ...createTeamDto }: { id: string } & CreateTeamDto) {
+    return this.authService.createTeam(id, createTeamDto);
   }
 
   @MessagePattern('findAllUsers')

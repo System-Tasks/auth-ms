@@ -94,7 +94,7 @@ export class AuthService {
   
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: { teamId: team.id },
+      data: { teamId: team.id, role: 'MEMBER' },
     });
   
     return {
@@ -108,10 +108,11 @@ export class AuthService {
     };
   }
 
-  async createTeam(createTeamDto: CreateTeamDto) {
+  async createTeam(id: string, createTeamDto: CreateTeamDto) {
     const { users } = createTeamDto;
 
-    return await this.prisma.team.create({
+
+    const teamCreated = await this.prisma.team.create({
       data: {
         users: {
           connect: users.map(id => ({ id }))
@@ -121,6 +122,20 @@ export class AuthService {
         users: true
       }
     });
+
+    users.map(async (user) => {
+      await this.prisma.user.update({
+        where: { id: user },
+        data: { role: 'MEMBER' },
+      });
+    })
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { role: 'ADMIN' },
+    });
+
+    return teamCreated;
   }
 
   async findAllUsers() {
