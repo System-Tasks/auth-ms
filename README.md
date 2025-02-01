@@ -33,7 +33,12 @@ docker pull postgres:16.2
 Para instalar dependencias
 ```
 npm install
+```
+
+Para levantar la base de datos
+```
 npx prisma migrate dev --name init
+docker compose up -d 
 ```
 
 Crear un archivo .env con el siguiente contenido
