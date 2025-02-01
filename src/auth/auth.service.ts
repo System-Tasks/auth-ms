@@ -125,7 +125,7 @@ export class AuthService {
 
   async findAllUsers() {
     return {
-      data: await this.prisma.user.findMany({})
+      data: await this.prisma.user.findMany()
     }
   }
 }
