@@ -126,13 +126,13 @@ export class AuthService {
     users.map(async (user) => {
       await this.prisma.user.update({
         where: { id: user },
-        data: { role: 'MEMBER' },
+        data: { role: 'MEMBER', teamId: teamCreated.id  },
       });
     })
 
     await this.prisma.user.update({
       where: { id },
-      data: { role: 'ADMIN' },
+      data: { role: 'ADMIN', teamId: teamCreated.id },
     });
 
     return this.prisma.team.findFirst({
