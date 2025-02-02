@@ -108,8 +108,8 @@ export class AuthService {
     };
   }
 
-  async createTeam(id: string, createTeamDto: CreateTeamDto) {
-    const { users } = createTeamDto;
+  async createTeam(createTeamDto: CreateTeamDto) {
+    const { id, users } = createTeamDto;
 
 
     const teamCreated = await this.prisma.team.create({
@@ -135,7 +135,12 @@ export class AuthService {
       data: { role: 'ADMIN' },
     });
 
-    return teamCreated;
+    return this.prisma.team.findFirst({
+      where: {id: teamCreated.id},
+      include: {
+        users: true
+      }
+    });
   }
 
   async findAllUsers() {
